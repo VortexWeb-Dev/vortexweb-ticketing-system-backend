@@ -44,7 +44,7 @@ class ResponseService
     {
         header("Content-Type: application/json");
         header("Access-Control-Allow-Origin: *"); // Optional: CORS
-        header("Access-Control-Allow-Headers: Content-Type");
+        header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Cache-Control");
 
         if ($cache) {
             header("Cache-Control: max-age=300, public");
