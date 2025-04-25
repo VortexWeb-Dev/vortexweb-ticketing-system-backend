@@ -301,6 +301,7 @@ class TicketsController extends BitrixController
             'ufCrm197ClientName' => $input['client_name'] ?? null,
             'ufCrm197ClientEmail' => $input['client_email'] ?? null,
             'ufCrm197CompanyName' => $input['company_name'] ?? null,
+            'ufCrm197PortalUrl' => $input['portal_url'] ?? null,
             'assignedById' => $input['assigned_to'] ?? null
         ];
 
@@ -330,6 +331,7 @@ class TicketsController extends BitrixController
                 'clientName' => $ticket['ufCrm197ClientName'] ?? '',
                 'companyName' => $ticket['ufCrm197CompanyName'] ?? '',
                 'clientEmail' => $ticket['ufCrm197ClientEmail'] ?? '',
+                'portalUrl' => $ticket['ufCrm197PortalUrl'] ?? '',
                 'assignedTo' => isset($ticket['assignedById']) ? $this->mapValue($ticket['assignedById'], self::EMPLOYEE_MAPPING) : '',
                 'createdTime' => isset($ticket['createdTime']) ? $this->formatDate($ticket['createdTime']) : '',
                 'updatedTime' => isset($ticket['updatedTime']) ? $this->formatDate($ticket['updatedTime']) : '',
