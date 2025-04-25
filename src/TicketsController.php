@@ -190,7 +190,7 @@ class TicketsController extends BitrixController
             exit;
         }
 
-        if (isset($input['category'])) {
+        if (isset($input['category']) && !isset($fields['assignedById'])) {
             $assignedById = $this->getAssignedEmployee($input['category']);
             if ($assignedById) {
                 $fields['assignedById'] = $assignedById;
