@@ -43,8 +43,9 @@ class ResponseService
     private function setHeaders(array $customHeaders = [], bool $cache = true): void
     {
         header("Content-Type: application/json");
-        header("Access-Control-Allow-Origin: *"); // Optional: CORS
-        header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Cache-Control");
+        header("Access-Control-Allow-Origin: *");
+        header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+        header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Cache-Control, Pragma");
 
         if ($cache) {
             header("Cache-Control: max-age=300, public");
