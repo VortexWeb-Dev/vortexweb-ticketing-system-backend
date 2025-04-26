@@ -21,13 +21,13 @@ class EmployeesController extends BitrixController
 
     public function processRequest(string $method, ?string $id): void
     {
-        $cacheKey = $method . '_' . ($_GET['endpoint'] ?? 'employees') . ($id ?? 'all') . (isset($_GET['page']) ? '_page_' . $_GET['page'] : '');
+        // $cacheKey = $method . '_' . ($_GET['endpoint'] ?? 'employees') . ($id ?? 'all') . (isset($_GET['page']) ? '_page_' . $_GET['page'] : '');
 
-        $cachedData = $this->cache->get($cacheKey);
-        if ($cachedData !== null && $method === 'GET') {
-            $this->response->sendSuccess(200, $cachedData);
-            return;
-        }
+        // $cachedData = $this->cache->get($cacheKey);
+        // if ($cachedData !== null && $method === 'GET') {
+        //     $this->response->sendSuccess(200, $cachedData);
+        //     return;
+        // }
 
         try {
             switch ($method) {
@@ -41,9 +41,9 @@ class EmployeesController extends BitrixController
             }
 
             if ($method === 'GET') {
-                $this->cache->set($cacheKey, $data);
+                // $this->cache->set($cacheKey, $data);
             } else {
-                $this->invalidateCache();
+                // $this->invalidateCache();
             }
 
             $this->response->sendSuccess(200, $data);

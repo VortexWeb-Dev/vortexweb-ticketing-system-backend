@@ -127,7 +127,7 @@ class TicketsController extends BitrixController
             if ($method === 'GET') {
                 // $this->cache->set($cacheKey, $data);
             } else {
-                $this->invalidateCache();
+                // $this->invalidateCache();
             }
 
             $this->response->sendSuccess(200, $data);
