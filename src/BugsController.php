@@ -20,6 +20,13 @@ class BugsController extends BitrixController
         1219 => 'Reopened',
     ];
 
+    private const SEVERITY_MAPPING = [
+        1211 => 'Critical',
+        1213 => 'Major',
+        1215 => 'Minor',
+        1217 => 'Trivial',
+    ];
+
     private const PRIORITY_MAPPING = [
         1173 => 'Low',
         1175 => 'Medium',
@@ -39,6 +46,7 @@ class BugsController extends BitrixController
         'In Progress' => 'DT1430_223:PREPARATION',
         'Resolved' => 'DT1430_223:CLIENT',
         'Closed' => 'DT1430_223:UC_W759PK',
+        'Reopened' => 'DT1430_223:UC_4NO7LV',
     ];
 
     private const EMPLOYEE_MAPPING = [
@@ -50,13 +58,6 @@ class BugsController extends BitrixController
         235 => 'Ajzal',
         245 => 'Devi Krishna',
         273 => 'Deshraj Singh',
-    ];
-
-    private const SEVERITY_MAPPING = [
-        1211 => 'Critical',
-        1213 => 'Major',
-        1215 => 'Minor',
-        1217 => 'Trivial',
     ];
 
     private const RESPONSIBLE_PERSON_MAPPING = [
@@ -104,11 +105,11 @@ class BugsController extends BitrixController
         try {
             switch ($method) {
                 case 'GET':
-                    $data = $id ? $this->getBug($id) : $this->getAllBugs();
+                    $data = $id ? $this->getTicket($id) : $this->getAllTickets();
                     break;
 
                 case 'POST':
-                    $data = $this->createBug();
+                    $data = $this->createTicket();
                     break;
 
                 case 'PUT':
@@ -116,7 +117,7 @@ class BugsController extends BitrixController
                         $this->response->sendError(400, "Bug ID is required for update");
                         return;
                     }
-                    $data = $this->updateBug($id);
+                    $data = $this->updateTicket($id);
                     break;
 
                 case 'DELETE':
@@ -124,7 +125,7 @@ class BugsController extends BitrixController
                         $this->response->sendError(400, "Bug ID is required for delete");
                         return;
                     }
-                    $data = $this->deleteBug($id);
+                    $data = $this->deleteTicket($id);
                     break;
 
                 default:
@@ -144,7 +145,7 @@ class BugsController extends BitrixController
         }
     }
 
-    private function getAllBugs(): array
+    private function getAllTickets(): array
     {
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 50;
@@ -152,15 +153,15 @@ class BugsController extends BitrixController
         $page = max(1, $page);
         $limit = min(100, max(1, $limit));
 
-        $bugData = $this->getAllBugsFromSPA($page, $limit);
-        $items = $bugData['items'];
-        $total = $bugData['total'];
+        $ticketData = $this->getAllTicketsFromSPA($page, $limit);
+        $items = $ticketData['items'];
+        $total = $ticketData['total'];
 
-        $transformedBugs = $this->transformData($items);
+        $transformedTickets = $this->transformData($items);
 
         return [
             "message" => "Fetched all bugs",
-            "bugs" => $transformedBugs,
+            "bugs" => $transformedTickets,
             "pagination" => [
                 "page" => $page,
                 "limit" => $limit,
@@ -170,7 +171,7 @@ class BugsController extends BitrixController
         ];
     }
 
-    private function getBug(string $id): array
+    private function getTicket(string $id): array
     {
         $bug = $this->getTicketFromSPA($id);
 
@@ -179,22 +180,22 @@ class BugsController extends BitrixController
             exit;
         }
 
-        $transformedBug = $this->transformData([$bug])[0];
+        $transformedTicket = $this->transformData([$bug])[0];
 
         return [
             "message" => "Fetched bug with ID $id",
-            "bug" => $transformedBug
+            "bug" => $transformedTicket
         ];
     }
 
-    private function createBug(): array
+    private function createTicket(): array
     {
         $input = $this->getInputData();
 
-        $fields = $this->prepareBugFields($input);
+        $fields = $this->prepareTicketFields($input);
 
-        if (empty($fields['ufCrm197Title']) || empty($fields['ufCrm197ClientName'])) {
-            $this->response->sendError(400, "Title and Client Name are required");
+        if (empty($fields['ufCrm197Title'])) {
+            $this->response->sendError(400, "Title is required");
             exit;
         }
 
@@ -206,11 +207,11 @@ class BugsController extends BitrixController
         }
 
         $bug = $this->createTicketInSPA($fields);
-        $transformedBug = $this->transformData([$bug])[0];
+        $transformedTicket = $this->transformData([$bug])[0];
 
         return [
             "message" => "Bug created successfully",
-            "bug" => $transformedBug
+            "bug" => $transformedTicket
         ];
     }
 
@@ -222,14 +223,14 @@ class BugsController extends BitrixController
             return null;
         }
 
-        $leastBugs = PHP_INT_MAX;
+        $leastTickets = PHP_INT_MAX;
         $assignedEmployeeId = null;
 
         foreach ($employeeIds as $employeeId) {
-            $bugCount = count($this->getEmployeeTickets($employeeId));
+            $ticketCount = count($this->getEmployeeTickets($employeeId));
 
-            if ($bugCount < $leastBugs) {
-                $leastBugs = $bugCount;
+            if ($ticketCount < $leastTickets) {
+                $leastTickets = $ticketCount;
                 $assignedEmployeeId = $employeeId;
             }
         }
@@ -237,22 +238,22 @@ class BugsController extends BitrixController
         return $assignedEmployeeId;
     }
 
-    private function updateBug(string $id): array
+    private function updateTicket(string $id): array
     {
-        $existingBug = $this->getTicketFromSPA($id);
-        if (!$existingBug) {
+        $existingTicket = $this->getTicketFromSPA($id);
+        if (!$existingTicket) {
             $this->response->sendError(404, "Bug not found");
             exit;
         }
 
         $input = $this->getInputData();
 
-        $fields = $this->prepareBugFields($input);
+        $fields = $this->prepareTicketFields($input);
 
         if (
             isset($input['category']) &&
-            (!isset($existingBug['ufCrm197Category']) ||
-                $this->mapValue($existingBug['ufCrm197Category'], self::CATEGORY_MAPPING) != $input['category'])
+            (!isset($existingTicket['ufCrm197Category']) ||
+                $this->mapValue($existingTicket['ufCrm197Category'], self::CATEGORY_MAPPING) != $input['category'])
         ) {
 
             $assignedById = $this->getAssignedEmployee($input['category']);
@@ -261,16 +262,16 @@ class BugsController extends BitrixController
             }
         }
 
-        $updatedBug = $this->updateTicketInSPA($id, $fields);
-        $transformedBug = $this->transformData([$updatedBug])[0];
+        $updatedTicket = $this->updateTicketInSPA($id, $fields);
+        $transformedTicket = $this->transformData([$updatedTicket])[0];
 
         return [
             "message" => "Bug with ID $id updated",
-            "bug" => $transformedBug
+            "bug" => $transformedTicket
         ];
     }
 
-    private function deleteBug(string $id): array
+    private function deleteTicket(string $id): array
     {
         $success = $this->deleteTicketFromSPA($id);
 
@@ -295,24 +296,30 @@ class BugsController extends BitrixController
         return $input;
     }
 
-    private function prepareBugFields(array $input): array
+    private function prepareTicketFields(array $input): array
     {
         $fields = [
             'ufCrm197Title' => $input['title'] ?? null,
             'ufCrm197Description' => $input['description'] ?? null,
             'ufCrm197Priority' => isset($input['priority']) ? $this->reverseMapPriority($input['priority']) : null,
+            'ufCrm197Category' => isset($input['category']) ? $this->reverseMapCategory($input['category']) : null,
             'ufCrm197Status' => isset($input['status']) ? $this->reverseMapStatus($input['status']) : null,
             'ufCrm197Attachments' => $input['attachments'] ?? null,
+            'ufCrm197Comments' => $input['comments'] ?? null,
+            'ufCrm197PlannedHours' => $input['planned_hours'] ?? null,
+            'ufCrm197ClientName' => $input['client_name'] ?? null,
+            'ufCrm197ClientEmail' => $input['client_email'] ?? null,
+            'ufCrm197CompanyName' => $input['company_name'] ?? null,
             'ufCrm197PortalUrl' => $input['portal_url'] ?? null,
-            'assignedById' => $input['assigned_to'] ?? null,
-            'ufCrm197ReportedBy' => $input['reported_to'] ?? null,
+            'ufCrm197ReportedBy' => $input['reported_by'] ?? null,
             'ufCrm197DateFound' => $input['date_found'] ?? null,
             'ufCrm197Env' => $input['environment'] ?? null,
-            'ufCrm197Severity' => $input['severity'] ?? null,
+            'ufCrm197Severity' => isset($input['severity']) ? $this->reverseMapSeverity($input['severity']) : null,
             'ufCrm197StepsToReproduce' => $input['steps_to_reproduce'] ?? null,
             'ufCrm197ExpectedResult' => $input['expected_result'] ?? null,
             'ufCrm197ActualResult' => $input['actual_result'] ?? null,
-            'ufCrm197Logs' => $input['logs'] ?? null
+            'ufCrm197Logs' => $input['logs'] ?? null,
+            'assignedById' => $input['assigned_to'] ?? null
         ];
 
         if (isset($input['status'])) {
@@ -328,29 +335,34 @@ class BugsController extends BitrixController
     {
         $transformedData = [];
         foreach ($data as $bug) {
-            $transformedBug = [
+            $transformedTicket = [
                 'id' => $bug['id'],
                 'title' => $bug['ufCrm197Title'] ?? '',
                 'description' => $bug['ufCrm197Description'] ?? '',
                 'priority' => isset($bug['ufCrm197Priority']) ? $this->mapValue($bug['ufCrm197Priority'], self::PRIORITY_MAPPING) : '',
-                'severity' => isset($bug['ufCrm197Severity']) ? $this->mapValue($bug['ufCrm197Severity'], self::SEVERITY_MAPPING) : '',
                 'category' => isset($bug['ufCrm197Category']) ? $this->mapValue($bug['ufCrm197Category'], self::CATEGORY_MAPPING) : '',
                 'status' => isset($bug['ufCrm197Status']) ? $this->mapValue($bug['ufCrm197Status'], self::STATUS_MAPPING) : '',
-                'reported_by' => $bug['ufCrm197ReportedBy'] ?? '',
-                'environment' => $bug['ufCrm197Env'] ?? '',
+                'severity' => isset($bug['ufCrm197Severity']) ? $this->mapValue($bug['ufCrm197Severity'], self::SEVERITY_MAPPING) : '',
                 'attachments' => $bug['ufCrm197Attachments'] ?? '',
+                'comments' => $bug['ufCrm197Comments'] ?? '',
+                'plannedHours' => $bug['ufCrm197PlannedHours'] ?? '',
+                'clientName' => $bug['ufCrm197ClientName'] ?? '',
+                'companyName' => $bug['ufCrm197CompanyName'] ?? '',
+                'clientEmail' => $bug['ufCrm197ClientEmail'] ?? '',
                 'portalUrl' => $bug['ufCrm197PortalUrl'] ?? '',
-                'date_found' => $bug['ufCrm197DateFound'] ?? '',
-                'steps_to_reproduce' => $bug['ufCrm197StepsToReproduce'] ?? '',
-                'expected_result' => $bug['ufCrm197ExpectedResult'] ?? '',
-                'actual_result' =>  $bug['ufCrm197ActualResult'] ?? '',
-                'logs' => $bug['logs'] ?? '',
                 'assignedTo' => isset($bug['assignedById']) ? $this->mapValue($bug['assignedById'], self::EMPLOYEE_MAPPING) : '',
+                'reportedBy' => $bug['ufCrm197ReportedBy'] ?? '',
+                'dateFound' => $bug['ufCrm197DateFound'] ?? '',
+                'environment' => $bug['ufCrm197Env'] ?? '',
+                'stepsToReproduce' => $bug['ufCrm197StepsToReproduce'] ?? '',
+                'expectedResult' => $bug['ufCrm197ExpectedResult'] ?? '',
+                'actualResult' => $bug['ufCrm197ActualResult'] ?? '',
+                'logs' => $bug['ufCrm197Logs'] ?? '',
                 'createdTime' => isset($bug['createdTime']) ? $this->formatDate($bug['createdTime']) : '',
                 'updatedTime' => isset($bug['updatedTime']) ? $this->formatDate($bug['updatedTime']) : '',
             ];
 
-            $transformedData[] = $transformedBug;
+            $transformedData[] = $transformedTicket;
         }
 
         return $transformedData;
@@ -380,6 +392,12 @@ class BugsController extends BitrixController
     private function reverseMapStatus(string $label): ?int
     {
         $mapping = array_flip(self::STATUS_MAPPING);
+        return $mapping[$label] ?? null;
+    }
+
+    private function reverseMapSeverity(string $label): ?int
+    {
+        $mapping = array_flip(self::SEVERITY_MAPPING);
         return $mapping[$label] ?? null;
     }
 
