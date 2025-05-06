@@ -37,6 +37,27 @@ class BitrixController
         ];
     }
 
+    protected function getAllBugsFromSPA(int $page = 1, int $limit = 50): array
+    {
+        $start = ($page - 1) * $limit;
+
+        $result = CRest::call('crm.item.list', [
+            'entityTypeId' => $this->entityTypeId,
+            'select' => ['*'],
+            'start' => $start,
+            'limit' => $limit
+        ]);
+
+        $items = $result['result']['items'] ?? [];
+        $total = $result['total'] ?? 0;
+
+        return [
+            'items' => $items,
+            'total' => $total,
+        ];
+    }
+
+
     protected function getTicketFromSPA(string $id): ?array
     {
         $result = CRest::call('crm.item.get', [
