@@ -172,7 +172,7 @@ class BugsController extends BitrixController
 
     private function getBug(string $id): array
     {
-        $bug = $this->getBugFromSPA($id);
+        $bug = $this->getTicketFromSPA($id);
 
         if (!$bug) {
             $this->response->sendError(404, "Bug not found");
@@ -205,7 +205,7 @@ class BugsController extends BitrixController
             }
         }
 
-        $bug = $this->createBugInSPA($fields);
+        $bug = $this->createTicketInSPA($fields);
         $transformedBug = $this->transformData([$bug])[0];
 
         return [
@@ -226,7 +226,7 @@ class BugsController extends BitrixController
         $assignedEmployeeId = null;
 
         foreach ($employeeIds as $employeeId) {
-            $bugCount = count($this->getEmployeeBugs($employeeId));
+            $bugCount = count($this->getEmployeeTickets($employeeId));
 
             if ($bugCount < $leastBugs) {
                 $leastBugs = $bugCount;
@@ -239,7 +239,7 @@ class BugsController extends BitrixController
 
     private function updateBug(string $id): array
     {
-        $existingBug = $this->getBugFromSPA($id);
+        $existingBug = $this->getTicketFromSPA($id);
         if (!$existingBug) {
             $this->response->sendError(404, "Bug not found");
             exit;
@@ -261,7 +261,7 @@ class BugsController extends BitrixController
             }
         }
 
-        $updatedBug = $this->updateBugInSPA($id, $fields);
+        $updatedBug = $this->updateTicketInSPA($id, $fields);
         $transformedBug = $this->transformData([$updatedBug])[0];
 
         return [
@@ -272,7 +272,7 @@ class BugsController extends BitrixController
 
     private function deleteBug(string $id): array
     {
-        $success = $this->deleteBugFromSPA($id);
+        $success = $this->deleteTicketFromSPA($id);
 
         if (!$success) {
             $this->response->sendError(404, "Bug not found");
