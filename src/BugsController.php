@@ -105,11 +105,11 @@ class BugsController extends BitrixController
         try {
             switch ($method) {
                 case 'GET':
-                    $data = $id ? $this->getTicket($id) : $this->getAllTickets();
+                    $data = $id ? $this->getBug($id) : $this->getAllTickets();
                     break;
 
                 case 'POST':
-                    $data = $this->createTicket();
+                    $data = $this->createBug();
                     break;
 
                 case 'PUT':
@@ -153,7 +153,7 @@ class BugsController extends BitrixController
         $page = max(1, $page);
         $limit = min(100, max(1, $limit));
 
-        $ticketData = $this->getAllTicketsFromSPA($page, $limit);
+        $ticketData = $this->getAllBugsFromSPA($page, $limit);
         $items = $ticketData['items'];
         $total = $ticketData['total'];
 
@@ -171,9 +171,9 @@ class BugsController extends BitrixController
         ];
     }
 
-    private function getTicket(string $id): array
+    private function getBug(string $id): array
     {
-        $bug = $this->getTicketFromSPA($id);
+        $bug = $this->getBugFromSPA($id);
 
         if (!$bug) {
             $this->response->sendError(404, "Bug not found");
@@ -188,7 +188,7 @@ class BugsController extends BitrixController
         ];
     }
 
-    private function createTicket(): array
+    private function createBug(): array
     {
         $input = $this->getInputData();
 
@@ -206,7 +206,7 @@ class BugsController extends BitrixController
             }
         }
 
-        $bug = $this->createTicketInSPA($fields);
+        $bug = $this->createBugInSPA($fields);
         $transformedTicket = $this->transformData([$bug])[0];
 
         return [
@@ -240,7 +240,7 @@ class BugsController extends BitrixController
 
     private function updateTicket(string $id): array
     {
-        $existingTicket = $this->getTicketFromSPA($id);
+        $existingTicket = $this->getBugFromSPA($id);
         if (!$existingTicket) {
             $this->response->sendError(404, "Bug not found");
             exit;

@@ -25,7 +25,10 @@ class BitrixController
             'entityTypeId' => $this->entityTypeId,
             'select' => ['*'],
             'start' => $start,
-            'limit' => $limit
+            'limit' => $limit,
+            'filter' => [
+                'ufCrm197_1746681104' => 'ticket'
+            ]
         ]);
 
         $items = $result['result']['items'] ?? [];
@@ -45,7 +48,10 @@ class BitrixController
             'entityTypeId' => $this->entityTypeId,
             'select' => ['*'],
             'start' => $start,
-            'limit' => $limit
+            'limit' => $limit,
+            'filter' => [
+                'ufCrm197_1746681104' => 'bug'
+            ]
         ]);
 
         $items = $result['result']['items'] ?? [];
@@ -68,11 +74,31 @@ class BitrixController
         return $result['result']['item'] ?? null;
     }
 
+    protected function getBugFromSPA(string $id): ?array
+    {
+        $result = CRest::call('crm.item.get', [
+            'entityTypeId' => $this->entityTypeId,
+            'id' => $id
+        ]);
+
+        return $result['result']['item'] ?? null;
+    }
+
     protected function createTicketInSPA(array $fields): ?array
     {
         $result = CRest::call('crm.item.add', [
             'entityTypeId' => $this->entityTypeId,
-            'fields' => $fields
+            'fields' => [...$fields, 'ufCrm197_1746681104' => 'ticket']
+        ]);
+
+        return $result['result']['item'] ?? null;
+    }
+
+    protected function createBugInSPA(array $fields): ?array
+    {
+        $result = CRest::call('crm.item.add', [
+            'entityTypeId' => $this->entityTypeId,
+            'fields' => [...$fields, 'ufCrm197_1746681104' => 'bug']
         ]);
 
         return $result['result']['item'] ?? null;
