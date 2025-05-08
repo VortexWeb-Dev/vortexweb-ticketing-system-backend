@@ -58,6 +58,7 @@ class BugsController extends BitrixController
         235 => 'Ajzal',
         245 => 'Devi Krishna',
         273 => 'Deshraj Singh',
+        295 => 'Karthik U'
     ];
 
     private const RESPONSIBLE_PERSON_MAPPING = [
@@ -82,6 +83,7 @@ class BugsController extends BitrixController
         ],
         'Other' => [
             1, // Vortexweb (Ishika)
+            295, // Karthik U
         ],
     ];
 
