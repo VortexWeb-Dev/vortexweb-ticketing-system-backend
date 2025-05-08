@@ -50,6 +50,7 @@ class TicketsController extends BitrixController
         245 => 'Devi Krishna',
         273 => 'Deshraj Singh',
         295 => 'Karthik U',
+        233 => 'Anupama Narjinary',
     ];
 
     private const RESPONSIBLE_PERSON_MAPPING = [
@@ -75,6 +76,7 @@ class TicketsController extends BitrixController
         'Other' => [
             1, // Vortexweb (Ishika)
             295, // Karthik U
+            233, // Anupama Narjinary
         ],
     ];
 
